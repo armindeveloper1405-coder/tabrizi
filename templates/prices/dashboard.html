@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}
+  نرخ‌های امروز | امیر حسین تبریزی
+{% endblock %}
+{% block content %}
+  <section class="dashboard-heading">
+    <div class="heading-copy">
+      <p class="eyebrow">باشگاه خصوصی قیمت</p>
+      <h1>آخرین نرخ قیمت</h1>
+      <p class="muted">نرخ‌های به‌روز گروه خصوصی را دنبال کنید.</p>
+    </div>
+    <div class="live-pill">
+      <span class="live-dot"></span> سامانه فعال
+    </div>
+  </section>
+
+  <section class="account-panel" aria-label="مانده حساب شما">
+    <div class="account-heading">
+      <span class="account-icon" aria-hidden="true">↻</span>
+      <div>
+        <p class="eyebrow">حساب کاربری</p>
+        <h2>مانده حساب</h2>
+      </div>
+    </div>
+    <div class="account-balances">
+      <div class="account-balance">
+        <span class="balance-label">مانده طلا</span>
+        <strong>{{ profile.balance_grams|floatformat:3 }} <small>گرم</small></strong>
+      </div>
+      <div class="account-balance">
+        <span class="balance-label">مانده ریالی</span>
+        <strong>{{ profile.balance_rials|floatformat:0|intcomma }} <small>ریال</small></strong>
+      </div>
+    </div>
+  </section>
+
+  <section class="rates-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">بازار امروز</p>
+        <h2>قیمت خرید و فروش</h2>
+      </div>
+      {% if latest_update %}
+        <span class="updated-at">
+          <span class="update-spark" aria-hidden="true"></span>
+          آخرین به‌روزرسانی: {{ latest_update.created_at|date:'Y/m/d - H:i' }}
+        </span>
+      {% endif %}
+    </div>
+    <div class="rates-list">
+      {% for item in price_items %}
+        {% with update=item.latest_updates.0 %}
+          <article class="rate-card">
+            {% if update %}
+              <div class="quote quote-buy">
+                <span class="quote-label">خرید</span>
+                <strong class="price-buy">{{ update.buy_price|floatformat:0|intcomma }}</strong>
+                <small>{{ item.unit }}</small>
+              </div>
+              <div class="asset-name">
+                <span class="asset-symbol" aria-hidden="true">◆</span>
+                <h3>{{ item.name }}</h3>
+                <span class="asset-unit">{{ item.unit }}</span>
+              </div>
+              <div class="quote quote-sell">
+                <span class="quote-label">فروش</span>
+                <strong class="price-sell">{{ update.sell_price|floatformat:0|intcomma }}</strong>
+                <small>{{ item.unit }}</small>
+              </div>
+              <div class="rate-time">آخرین تغییر: {{ update.created_at|date:'H:i' }}</div>
+            {% else %}
+              <div class="asset-name">
+                <span class="asset-symbol" aria-hidden="true">◆</span>
+                <h3>{{ item.name }}</h3>
+                <span class="asset-unit">{{ item.unit }}</span>
+              </div>
+              <p class="empty-price">هنوز نرخی برای این مورد ثبت نشده است.</p>
+            {% endif %}
+          </article>
+        {% endwith %}
+      {% empty %}
+        <div class="empty-state">
+          <span class="empty-state-icon" aria-hidden="true">◇</span>
+          <p>در حال حاضر نرخی برای نمایش وجود ندارد.</p>
+          <small>به‌محض ثبت نرخ توسط مدیر، اینجا نمایش داده می‌شود.</small>
+        </div>
+      {% endfor %}
+    </div>
+    <p class="table-footnote">قیمت‌ها توسط مدیر سامانه ثبت می‌شوند و ممکن است در طول روز تغییر کنند.</p>
+  </section>
+
+  <section class="purchase-summary">
+    <div>
+      <p class="eyebrow">ثبت سفارش امن</p>
+      <h2>خرید بر اساس نرخ روز</h2>
+      <p class="muted">مقدار را به گرم انتخاب کنید؛ مبلغ نهایی پیش از ثبت نمایش داده می‌شود.</p>
+    </div>
+    <a class="btn btn-gold" href="{% url 'purchase' %}">شروع خرید</a>
+  </section>
+
+  <section class="notice-card">
+    <div class="notice-icon" aria-hidden="true">i</div>
+    <div>
+      <h2>اطلاعیه</h2><p>این صفحه فقط برای اعضای تأییدشده قابل مشاهده است. برای عضویت یا پیگیری موجودی، با مدیر گروه در ارتباط باشید.</p>
+    </div>
+  </section>
+{% endblock %}

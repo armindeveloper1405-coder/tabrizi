@@ -1,0 +1,53 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#10111b" />
+    <title>
+      {% block title %}
+        باشگاه قیمت امیر حسین تبریزی
+      {% endblock %}
+    </title>
+    <link href="{% static 'css/site.css' %}" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="{% url 'dashboard' %}">
+          <span class="brand-mark" aria-hidden="true">ت</span>
+          <span>امیر حسین تبریزی</span>
+        </a>
+        {% if request.user.is_authenticated %}
+          <div class="user-menu">
+            <span class="user-greeting">سلام، {{ request.user.first_name|default:request.user.username }}</span>
+            <a class="admin-link" href="{% url 'purchase' %}">خرید</a>
+            {% if request.user.is_staff %}
+              <a class="admin-link" href="{% url 'admin:index' %}">پنل مدیریت</a>
+            {% endif %}
+            <form method="post" action="{% url 'logout' %}">
+              {% csrf_token %}
+              <button class="icon-button" type="submit" aria-label="خروج از حساب" title="خروج">↪</button>
+            </form>
+          </div>
+        {% endif %}
+      </header>
+      <main class="container page-content">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+              {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="بستن"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+        {% block content %}
+        {% endblock %}
+      </main>
+      <footer class="footer-note">این سامانه خصوصی است و دسترسی فقط برای اعضای دعوت‌شده امکان‌پذیر است
+          <p>designed by AMIR TABRIZI</p>
+          .</footer>
+    </div>
+    <script src="{% static 'js/site.js' %}"></script>
+  </body>
+</html>

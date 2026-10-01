@@ -1,0 +1,25 @@
+{% extends 'base.html' %} {% block title %}
+  ورود اعضا | امیر حسین تبریزی
+{% endblock %} {% block content %}
+  <section class="login-wrap">
+    <div class="login-card">
+      <span class="brand-mark login-mark" aria-hidden="true">ت</span>
+      <p class="eyebrow">باشگاه خصوصی قیمت</p>
+      <h1>ورود اعضا</h1>
+      <p class="muted">برای ورود، نام کاربری و رمز عبوری را وارد کنید که مدیر در اختیار شما گذاشته است.</p>
+      {% if form.errors %}
+        <div class="form-error" role="alert">نام کاربری یا رمز عبور صحیح نیست.</div>
+      {% endif %}
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}" />
+        <label for="id_username">نام کاربری</label>
+        <input class="form-control dark-input" id="id_username" name="username" autocomplete="username" required autofocus />
+        <label for="id_password" class="mt-3">رمز عبور</label>
+        <input class="form-control dark-input" id="id_password" name="password" type="password" autocomplete="current-password" required />
+        <button class="btn btn-gold w-100 mt-4" type="submit">ورود امن</button>
+      </form>
+      <div class="login-foot">ثبت‌نام عمومی غیرفعال است؛ برای عضویت با مدیر سایت تماس بگیرید.</div>
+    </div>
+  </section>
+{% endblock %}

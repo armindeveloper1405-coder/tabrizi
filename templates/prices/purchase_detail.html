@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}
+  پیگیری خرید شماره {{ order.pk }} | امیر حسین تبریزی
+{% endblock %}
+{% block content %}
+  <section class="dashboard-heading">
+    <div>
+      <p class="eyebrow">پیگیری سفارش شماره {{ order.pk }}</p>
+      <h1>{{ order.item.name }}</h1>
+      <p class="muted">{{ order.quantity_grams|floatformat:3 }} گرم × {{ order.unit_price|floatformat:0|intcomma }} ریال</p>
+    </div>
+    <span class="order-status">{{ order.get_status_display }}</span>
+  </section>
+  <section class="purchase-summary">
+    <strong>مبلغ نهایی</strong>
+    <strong class="purchase-total">{{ order.total_price|floatformat:0|intcomma }} ریال</strong>
+  </section>
+
+  {% if order.status == 'awaiting_admin' %}
+    <section class="order-panel">
+      <h2>در انتظار تأیید اولیه مدیر</h2>
+      <p>مدیر باید درخواست را در مهلت تعیین‌شده تأیید کند. پس از تأیید، اطلاعات کارت بانکی نمایش داده می‌شود.</p>
+      <p>
+        زمان باقی‌مانده: <span class="timer" data-countdown="{{ remaining_seconds }}">{{ remaining_seconds }}</span> ثانیه
+      </p>
+      {% if can_review %}
+        <div class="order-actions">
+          <form method="post" action="{% url 'review_purchase' order.pk 'approve' %}">
+            {% csrf_token %}<button class="btn btn-gold" type="submit">تأیید درخواست</button>
+          </form>
+        </div>
+      {% endif %}
+    </section>
+  {% elif order.status == 'expired' %}
+    <section class="order-panel">
+      <h2>مهلت تأیید به پایان رسید</h2>
+      <p>درخواست منقضی شده است و خرید ادامه پیدا نکرد. می‌توانید از صفحه خرید، درخواست تازه‌ای ثبت کنید.</p>
+      <a class="btn btn-gold" href="{% url 'purchase' %}">بازگشت به خرید</a>
+    </section>
+  {% elif order.status == 'payment_due' %}
+    <section class="order-panel">
+      <h2>پرداخت به کارت بانکی</h2>
+      {% if order.payment_card_number %}
+        <article class="bank-card" aria-label="اطلاعات کارت بانکی مقصد">
+          <strong>{{ order.payment_bank_name|default:'کارت بانکی' }}</strong>
+          <div class="bank-card-number">{{ order.payment_card_number }}</div>
+          <strong>{{ order.payment_card_holder }}</strong>
+        </article>
+        <p>پس از انتقال دقیق مبلغ بالا، شناسه پیگیری را ثبت کنید، پیام تأیید پرداخت خود را بنویسید و تصویر یا PDF رسید را برای مدیر ارسال کنید.</p>
+        <form class="purchase-panel" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+          <label for="{{ form.receipt_reference.id_for_label }}">شناسه یا شماره پیگیری رسید</label>
+          {{ form.receipt_reference }}
+          {{ form.receipt_reference.errors }}
+          <label for="{{ form.receipt_message.id_for_label }}">پیام تأیید پرداخت برای مدیر</label>
+          {{ form.receipt_message }}
+          {{ form.receipt_message.errors }}
+          <label for="{{ form.receipt_file.id_for_label }}">تصویر یا PDF رسید (اجباری، حداکثر ۵ مگابایت)</label>
+          {{ form.receipt_file }}
+          {{ form.receipt_file.errors }}
+          <button class="btn btn-gold" type="submit">ارسال رسید برای بررسی</button>
+        </form>
+      {% else %}
+        <p>اطلاعات کارت بانکی هنوز توسط مدیر ثبت نشده است. لطفاً با مدیر تماس بگیرید.</p>
+      {% endif %}
+    </section>
+  {% elif order.status == 'receipt_review' %}
+    <section class="order-panel">
+      <h2>رسید ارسال شد</h2>
+      <p>
+        شناسه پیگیری: <strong>{{ order.receipt_reference }}</strong>
+      </p>
+      {% if order.receipt_message %}
+        <p>پیام شما: {{ order.receipt_message }}</p>
+      {% endif %}
+      <p>خرید پس از تأیید نهایی مدیر تکمیل می‌شود.</p>
+      {% if can_review %}
+        <form method="post" action="{% url 'review_purchase' order.pk 'complete' %}">
+          {% csrf_token %}<button class="btn btn-gold" type="submit">تأیید رسید و نهایی‌کردن خرید</button>
+        </form>
+      {% endif %}
+    </section>
+  {% elif order.status == 'completed' %}
+    <section class="order-panel">
+      <h2>خرید نهایی شد</h2><p>رسید شما توسط مدیر تأیید شده است.</p>
+    </section>
+  {% elif order.status == 'rejected' %}
+    <section class="order-panel">
+      <h2>درخواست تأیید نشد</h2><p>برای پیگیری با مدیر تماس بگیرید یا درخواست تازه‌ای ثبت کنید.</p><a class="btn btn-gold" href="{% url 'purchase' %}">ثبت درخواست تازه</a>
+    </section>
+  {% endif %}
+{% endblock %}

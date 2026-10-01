@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}ثبت خرید | امیر حسین تبریزی{% endblock %}
+{% block content %}
+  <section class="dashboard-heading">
+    <div>
+      <p class="eyebrow">ثبت سفارش</p>
+      <h1>محاسبه و درخواست خرید</h1>
+      <p class="muted">قیمت هر گرم از آخرین نرخ ثبت‌شده مدیر محاسبه می‌شود.</p>
+    </div>
+  </section>
+  <form class="purchase-panel" method="post">
+    {% csrf_token %}
+    <label for="item">نوع کالا</label>
+    <select id="item" name="item" data-price-select required>
+      {% for item in price_items %}
+        {% with update=item.latest_updates.0 %}
+          <option value="{{ item.pk }}" data-price="{{ update.sell_price }}">
+            {{ item.name }} — هر گرم {{ update.sell_price|floatformat:0|intcomma }} ریال
+          </option>
+        {% endwith %}
+      {% empty %}
+        <option value="">فعلاً کالای قیمت‌گذاری‌شده‌ای برای خرید وجود ندارد.</option>
+      {% endfor %}
+    </select>
+    <label for="quantity_grams">مقدار موردنظر (گرم، حداکثر سه رقم اعشار)</label>
+    <input id="quantity_grams" name="quantity_grams" type="number" min="0.001" max="999999999.999" step="0.001" data-quantity required>
+    <div class="purchase-summary">
+      <strong>مبلغ نهایی</strong>
+      <strong class="purchase-total"><span data-total>۰</span> ریال</strong>
+    </div>
+    <p class="muted">قیمت فروش هنگام ثبت سفارش در سرور دوباره بررسی و برای همین درخواست ثابت می‌شود.</p>
+    <button class="btn btn-gold" type="submit" {% if not price_items %}disabled{% endif %}>ثبت درخواست و انتظار برای تأیید مدیر</button>
+  </form>
+{% endblock %}
